@@ -46,9 +46,12 @@ body {
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%,-50%);
-  transition: transform 0.08s, width 0.25s, height 0.25s, border-radius 0.25s;
+  transition: width 0.25s, height 0.25s, border-radius 0.25s;
   mix-blend-mode: difference;
+  /* hidden until first mouse move so it doesn't flash at (0,0) */
+  opacity: 0;
 }
+.cur.visible { opacity: 1; }
 .cur.big { width:44px; height:44px; }
 .cur-ring {
   width:40px; height:40px;
@@ -59,9 +62,11 @@ body {
   pointer-events: none;
   z-index: 9998;
   transform: translate(-50%,-50%);
-  transition: transform 0.18s ease, width 0.3s, height 0.3s, opacity 0.3s;
+  transition: width 0.3s, height 0.3s, opacity 0.3s;
+  opacity: 0;
 }
-.cur-ring.small { width:14px; height:14px; opacity:0; }
+.cur-ring.visible { opacity: 1; }
+.cur-ring.small { width:14px; height:14px; opacity:0 !important; }
 @media(hover:none){ .cur,.cur-ring{ display:none; } body{ cursor:auto; } }
 
 /* ── NOISE ── */
@@ -115,12 +120,28 @@ nav {
 
 /* ── HERO ── */
 #home {
-  min-height:100vh;
-  display:flex; flex-direction:column;
-  justify-content:flex-end;
-  padding: 0 3rem 4rem;
-  position:relative;
-  overflow:hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(80px + 3rem) 3rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-top {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-main {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 2rem;
 }
 
 .hero-grid {
@@ -155,9 +176,8 @@ nav {
   letter-spacing: 3px;
   color: var(--acid);
   text-transform: uppercase;
-  margin-bottom: 1.5rem;
-  position:relative;
-  z-index:2;
+  position: relative;
+  z-index: 2;
   opacity: 0;
   animation: fadeUp 0.8s 0.2s forwards;
 }
@@ -168,29 +188,35 @@ nav {
   line-height: 0.88;
   letter-spacing: 2px;
   color: var(--off-white);
-  position:relative; z-index:2;
-  opacity:0;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
   animation: fadeUp 0.9s 0.35s forwards;
+  margin-bottom: 1.4rem; /* replaces the removed margin-top from hero-role */
 }
 .hero-name span { color: var(--acid); }
 
 .hero-role {
   font-size: clamp(1rem, 2.5vw, 1.6rem);
-  font-weight:300;
+  font-weight: 300;
   color: var(--muted);
-  margin-top:1.4rem;
-  letter-spacing:1px;
-  position:relative; z-index:2;
-  opacity:0;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
   animation: fadeUp 0.9s 0.5s forwards;
 }
 
 .hero-bottom {
-  display:flex; justify-content:space-between; align-items:flex-end;
-  margin-top: 4rem;
-  position:relative; z-index:2;
-  opacity:0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
   animation: fadeUp 0.9s 0.7s forwards;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border); /* visual separator between content and nav bar */
 }
 
 .hero-scroll {
@@ -224,7 +250,7 @@ nav {
   text-decoration:none;
   font-weight:500;
   transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 0 0 var(--acid-glow);
+  box-shadow: none;
 }
 .cv-link:hover {
   transform:translateY(-3px);
@@ -258,6 +284,9 @@ nav {
   animation: marquee 20s linear infinite;
   width: max-content;
 }
+/* Pause marquee when user hovers or prefers reduced motion */
+.marquee-wrap:hover .marquee-inner { animation-play-state: paused; }
+@media(prefers-reduced-motion: reduce){ .marquee-inner { animation: none; } }
 .marquee-inner span {
   font-family: var(--display);
   font-size:1.3rem;
@@ -379,7 +408,10 @@ nav {
   border-bottom: 1px solid var(--border);
   transition: background 0.3s;
 }
-.exp-item:first-child { border-top: 1px solid var(--border); }
+/* Top border on the experience block itself, not via broken :first-child */
+.experience-timeline {
+  border-top: 1px solid var(--border);
+}
 
 .exp-meta { padding-top:0.2rem; }
 .exp-date {
@@ -570,7 +602,9 @@ footer {
   text-transform:uppercase;
 }
 
-/* ── SCROLL REVEAL ── */
+/* Nav active link */
+.nav-links a.active { color: var(--acid); }
+.nav-links a.active::after { width: 100%; }
 .reveal {
   opacity:0;
   transform:translateY(36px);
@@ -581,11 +615,19 @@ footer {
 .reveal-delay-2 { transition-delay:0.2s; }
 .reveal-delay-3 { transition-delay:0.3s; }
 
-/* ── RESPONSIVE ── */
+/* 7 cards in 3-col grid: last card spans full width so it doesn't orphan */
+.project-card:last-child:nth-child(3n - 2) {
+  grid-column: 1 / -1;
+}
+/* On 2-col breakpoints (tablet), last odd card also spans full */
+@media(max-width:1100px) and (min-width:701px) {
+  .projects-grid { grid-template-columns: repeat(2,1fr); }
+  .project-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
 @media(max-width:960px){
   nav { padding:1.2rem 1.5rem; }
   .nav-links { display:none; }
-  #home { padding:0 1.5rem 3rem; }
+  #home { padding: calc(70px + 2rem) 1.5rem 3rem; } /* keep nav clearance on mobile */
   .section { padding:5rem 1.5rem; }
   .about-layout, .contact-layout { grid-template-columns:1fr; gap:3rem; }
   .about-photo-col { position:static; }
@@ -621,10 +663,18 @@ footer {
   <div class="hero-grid"></div>
   <div class="hero-glow"></div>
 
-  <div class="hero-label">Cairo, Egypt · Data Engineer · CS Student</div>
-  <h1 class="hero-name">Abanob<br><span>Thabet</span></h1>
-  <p class="hero-role">Transforming raw data into decisions that matter.</p>
+  <!-- Top zone: label pinned near nav -->
+  <div class="hero-top">
+    <div class="hero-label">Cairo, Egypt · Data Engineer · CS Student</div>
+  </div>
 
+  <!-- Middle zone: name + tagline grow to fill space, sit at bottom of zone -->
+  <div class="hero-main">
+    <h1 class="hero-name">Abanob<br><span>Thabet</span></h1>
+    <p class="hero-role">Transforming raw data into decisions that matter.</p>
+  </div>
+
+  <!-- Bottom bar: scroll indicator, page counter, CV button -->
   <div class="hero-bottom">
     <a href="#about" class="hero-scroll">
       <div class="hero-scroll-line"></div>
@@ -638,7 +688,7 @@ footer {
 </section>
 
 <!-- MARQUEE -->
-<div class="marquee-wrap">
+<div class="marquee-wrap" aria-hidden="true">
   <div class="marquee-inner">
     <span>Python</span><span class="accent">★</span>
     <span>Apache Spark</span><span class="accent">★</span>
@@ -703,6 +753,7 @@ footer {
   <div class="section-number reveal">03 — Experience</div>
   <h2 class="section-title reveal">Work &<br>Training</h2>
 
+  <div class="experience-timeline">
   <div class="exp-item reveal">
     <div class="exp-meta">
       <div class="exp-date">May 2025</div>
@@ -718,6 +769,7 @@ footer {
       </ul>
     </div>
   </div>
+  </div><!-- /.experience-timeline -->
 </section>
 
 <!-- PROJECTS -->
@@ -812,7 +864,7 @@ footer {
     <div class="contact-items reveal reveal-delay-2">
       <div class="contact-row">
         <span class="contact-label">Email</span>
-        <a href="mailto:abanob.ajban@gmail.com" class="contact-link">abanob.ajban@gmail.com</a>
+        <a href="/cdn-cgi/l/email-protection#d1b0b3b0bfbeb3ffb0bbb3b0bf91b6bcb0b8bdffb2bebc" class="contact-link"><span class="__cf_email__" data-cfemail="b7d6d5d6d9d8d599d6ddd5d6d9f7d0dad6dedb99d4d8da">[email&#160;protected]</span></a>
       </div>
       <div class="contact-row">
         <span class="contact-label">Phone</span>
@@ -837,46 +889,68 @@ footer {
 </footer>
 
 <script>
-// Cursor
-const cur = document.getElementById('cur');
-const ring = document.getElementById('curRing');
-let mx=0, my=0, rx=0, ry=0;
+// ── CURSOR ──
+// Use distinct variable names to avoid any collision
+const curDot = document.getElementById('cur');
+const curRingEl = document.getElementById('curRing');
+let mouseX = -999, mouseY = -999; // off-screen default prevents (0,0) flash
+let ringX = -999, ringY = -999;
+let cursorVisible = false;
 
-document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  // Reveal cursor on first real mouse move
+  if (!cursorVisible) {
+    cursorVisible = true;
+    curDot.classList.add('visible');
+    curRingEl.classList.add('visible');
+  }
+});
 
-(function tick(){
-  rx += (mx-rx)*0.14;
-  ry += (my-ry)*0.14;
-  cur.style.left = mx+'px';
-  cur.style.top = my+'px';
-  ring.style.left = rx+'px';
-  ring.style.top = ry+'px';
-  requestAnimationFrame(tick);
+(function animateCursor() {
+  ringX += (mouseX - ringX) * 0.14;
+  ringY += (mouseY - ringY) * 0.14;
+  curDot.style.left = mouseX + 'px';
+  curDot.style.top  = mouseY + 'px';
+  curRingEl.style.left = ringX + 'px';
+  curRingEl.style.top  = ringY + 'px';
+  requestAnimationFrame(animateCursor);
 })();
 
 document.querySelectorAll('a, button, .project-card, .skill-tag, .contact-row').forEach(el => {
-  el.addEventListener('mouseenter', ()=>{ cur.classList.add('big'); ring.classList.add('small'); });
-  el.addEventListener('mouseleave', ()=>{ cur.classList.remove('big'); ring.classList.remove('small'); });
+  el.addEventListener('mouseenter', () => { curDot.classList.add('big'); curRingEl.classList.add('small'); });
+  el.addEventListener('mouseleave', () => { curDot.classList.remove('big'); curRingEl.classList.remove('small'); });
 });
 
-// Scroll reveal
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); });
-}, { threshold:0.1, rootMargin:'0px 0px -40px 0px' });
-document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+// ── SCROLL REVEAL ──
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('on');
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-// Nav active
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-links a');
-window.addEventListener('scroll', ()=>{
-  let cur='';
-  sections.forEach(s=>{
-    if(window.scrollY >= s.offsetTop-160) cur = s.id;
+// ── NAV ACTIVE STATE ──
+// Uses CSS class (not inline style) so :hover still works correctly
+const allSections = document.querySelectorAll('section[id]');
+const allNavLinks = document.querySelectorAll('.nav-links a');
+
+function updateActiveNav() {
+  let currentId = '';
+  allSections.forEach(section => {
+    if (window.scrollY >= section.offsetTop - 160) {
+      currentId = section.getAttribute('id');
+    }
   });
-  navLinks.forEach(a=>{
-    a.style.color = a.getAttribute('href').slice(1)===cur ? 'var(--acid)' : '';
+  allNavLinks.forEach(link => {
+    const isActive = link.getAttribute('href').slice(1) === currentId;
+    link.classList.toggle('active', isActive);
   });
-});
+}
+
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+updateActiveNav(); // run once on load
 </script>
 </body>
 </html>
