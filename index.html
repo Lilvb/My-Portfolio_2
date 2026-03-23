@@ -624,10 +624,89 @@ footer {
   .projects-grid { grid-template-columns: repeat(2,1fr); }
   .project-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
+/* ── HAMBURGER ── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: none;
+  padding: 0;
+  z-index: 1000;
+  position: relative;
+}
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background: var(--off-white);
+  border-radius: 2px;
+  transition: transform 0.35s ease, opacity 0.25s ease, width 0.3s ease;
+  transform-origin: center;
+}
+/* Animate to X when open */
+.hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* ── MOBILE DRAWER ── */
+.mobile-drawer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--black);
+  z-index: 800;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6rem 2.5rem 3rem;
+  /* slide in from right */
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.77, 0, 0.18, 1);
+}
+.mobile-drawer.open { transform: translateX(0); }
+.mobile-drawer ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.mobile-drawer ul li {
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.mobile-drawer ul li:first-child { border-top: 1px solid var(--border); }
+.mobile-drawer ul a {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(2.8rem, 10vw, 4.5rem);
+  letter-spacing: 2px;
+  color: var(--off-white);
+  text-decoration: none;
+  padding: 0.6rem 0;
+  line-height: 1;
+  transition: color 0.2s, padding-left 0.25s;
+}
+.mobile-drawer ul a:hover,
+.mobile-drawer ul a:focus { color: var(--acid); padding-left: 0.5rem; }
+.drawer-footer {
+  margin-top: auto;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
 @media(max-width:960px){
   nav { padding:1.2rem 1.5rem; }
   .nav-links { display:none; }
-  #home { padding: calc(70px + 2rem) 1.5rem 3rem; } /* keep nav clearance on mobile */
+  .hamburger { display:flex; }
+  .mobile-drawer { display:flex; }
+  #home { padding: calc(70px + 2rem) 1.5rem 3rem; }
   .section { padding:5rem 1.5rem; }
   .about-layout, .contact-layout { grid-template-columns:1fr; gap:3rem; }
   .about-photo-col { position:static; }
@@ -656,7 +735,24 @@ footer {
     <li><a href="#projects">Projects</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+  <ul>
+    <li><a href="#home"   class="drawer-link">Home</a></li>
+    <li><a href="#about"  class="drawer-link">About</a></li>
+    <li><a href="#experience" class="drawer-link">Experience</a></li>
+    <li><a href="#projects"   class="drawer-link">Projects</a></li>
+    <li><a href="#contact"    class="drawer-link">Contact</a></li>
+  </ul>
+  <div class="drawer-footer">Abanob Thabet · Data Engineer</div>
+</div>
 
 <!-- HERO -->
 <section id="home">
@@ -948,6 +1044,34 @@ function updateActiveNav() {
     link.classList.toggle('active', isActive);
   });
 }
+
+// ── MOBILE DRAWER ──
+const hamburger = document.getElementById('hamburger');
+const mobileDrawer = document.getElementById('mobileDrawer');
+
+function toggleDrawer(open) {
+  hamburger.classList.toggle('open', open);
+  hamburger.setAttribute('aria-expanded', open);
+  mobileDrawer.classList.toggle('open', open);
+  mobileDrawer.setAttribute('aria-hidden', !open);
+  // Prevent body scroll while drawer is open
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+hamburger.addEventListener('click', () => {
+  const isOpen = hamburger.classList.contains('open');
+  toggleDrawer(!isOpen);
+});
+
+// Close drawer when a link is clicked
+document.querySelectorAll('.drawer-link').forEach(link => {
+  link.addEventListener('click', () => toggleDrawer(false));
+});
+
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') toggleDrawer(false);
+});
 
 window.addEventListener('scroll', updateActiveNav, { passive: true });
 updateActiveNav(); // run once on load
