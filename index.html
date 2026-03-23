@@ -218,7 +218,7 @@ nav {
 .hero-main {
   flex: 1;
   display: flex; flex-direction: column; justify-content: flex-end;
-  min-height: 140px; /* guard: prevents collapse on short screens */
+  min-height: 140px;
   padding-bottom: 1.5rem;
 }
 
@@ -538,10 +538,33 @@ footer {
   .hamburger { display: flex; }
   .mobile-drawer { display: flex; }
 
-  /* hero — hide decorative bottom items, keep only CV button */
+  /* hero: center everything vertically, pin CV button absolutely */
+  #home {
+    justify-content: center;
+    padding-top: calc(var(--nav-h) + 1rem);
+    padding-bottom: 5rem; /* room for the absolutely-positioned CV button */
+  }
+  .hero-top  { width: 100%; }
+  .hero-main {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    max-height: none;
+    min-height: 0;
+    padding-bottom: 0;
+    margin-top: 2.5rem;
+  }
+  /* pin the bottom bar to the actual bottom of the section */
+  .hero-bottom {
+    position: absolute;
+    bottom: 2rem;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    margin-top: 0;
+    padding-top: 1.2rem;
+    justify-content: flex-end;
+  }
   .hero-scroll  { display: none; }
   .hero-counter { display: none; }
-  .hero-bottom  { justify-content: flex-end; }
 
   /* single-column layouts */
   .about-layout   { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -556,7 +579,6 @@ footer {
 
   /* projects: two columns */
   .projects-grid { grid-template-columns: repeat(2,1fr); }
-  /* reset 3-col orphan rule, apply 2-col one */
   .project-card:last-child:nth-child(3n - 2) { grid-column: auto; }
   .project-card:last-child:nth-child(odd)    { grid-column: 1 / -1; }
 
@@ -568,14 +590,16 @@ footer {
    MOBILE  ≤ 600px
 ═══════════════════════════════════════ */
 @media(max-width:600px) {
-  /* hero typography — prevent overflow on narrow screens */
-  .hero-name { font-size: clamp(3.6rem, 18vw, 5.5rem); }
-  .hero-role { font-size: .92rem; }
+  /* hero: tighten name so it doesn't dominate the whole screen */
+  .hero-name { font-size: clamp(3.4rem, 17vw, 5rem); margin-bottom: .7rem; }
+  .hero-role { font-size: .9rem; }
   .cv-link   { font-size: .65rem; padding: .6rem 1rem; letter-spacing: 1px; }
+  /* a little less gap between label and name on small phones */
+  .hero-main { margin-top: 1.4rem; }
 
   /* section headings */
-  .section-title  { font-size: clamp(2.4rem, 12vw, 3.5rem); margin-bottom: 2.5rem; }
-  .section        { padding: 4.5rem var(--pad-x); }
+  .section-title { font-size: clamp(2.4rem, 12vw, 3.5rem); margin-bottom: 2.5rem; }
+  .section       { padding: 4.5rem var(--pad-x); }
 
   /* projects: one column */
   .projects-grid { grid-template-columns: 1fr; }
@@ -808,7 +832,7 @@ footer {
     <div class="contact-items reveal reveal-delay-2">
       <div class="contact-row">
         <span class="contact-label">Email</span>
-        <a href="mailto:abanob.ajban@gmail.com" class="contact-link">abanob.ajban@gmail.com</a>
+        <a href="/cdn-cgi/l/email-protection#d6b7b4b7b8b9b4f8b7bcb4b7b896b1bbb7bfbaf8b5b9bb" class="contact-link"><span class="__cf_email__" data-cfemail="78191a1916171a5619121a1916381f15191114561b1715">[email&#160;protected]</span></a>
       </div>
       <div class="contact-row">
         <span class="contact-label">Phone</span>
@@ -832,7 +856,7 @@ footer {
   <span class="footer-badge">Cairo · Egypt</span>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── CURSOR ──
 const curDot    = document.getElementById('cur');
 const curRingEl = document.getElementById('curRing');
@@ -894,9 +918,4 @@ function toggleDrawer(open) {
   document.body.style.overflow = open ? 'hidden' : '';
 }
 
-hamburger.addEventListener('click', () => toggleDrawer(!hamburger.classList.contains('open')));
-document.querySelectorAll('.drawer-link').forEach(l => l.addEventListener('click', () => toggleDrawer(false)));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleDrawer(false); });
-</script>
-</body>
-</html>
+hamburger.addEventListener('click', () => toggleDrawer(!hamburger.classList.co
